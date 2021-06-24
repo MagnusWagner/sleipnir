@@ -125,21 +125,22 @@ public class HEFTResearch extends OffloadScheduler {
 				{
 					tMin = localDevice.getESTforTask(currTask) + currTask.getRuntimeOnNode(localDevice, currentInfrastructure); // Earliest Finish Time  EFT = wij + EST
 					target = localDevice;
-					
 				}
-				
 			}
 			//if scheduling found a target node for the task, it allocates it to the target node
 			if(target != null)
 			{
 				deploy(scheduling,currTask,target);
 				scheduledNodes.add(currTask);
+<<<<<<< Updated upstream
 				tasks.remove(currTask);
 			}
 			else if(!scheduledNodes.isEmpty());
 			{
 				MobileSoftwareComponent terminated = scheduledNodes.remove();
 				((ComputationalNode) scheduling.get(terminated)).undeploy(terminated);
+=======
+>>>>>>> Stashed changes
 			}
 			/*
 			 * if simulation considers mobility, perform post-scheduling operations
@@ -209,5 +210,16 @@ public class HEFTResearch extends OffloadScheduler {
 		}
 		return msc.getRank();
 	}
+
+	/**
+	 * bLevel is the task prioritizing phase of HLFET
+	 * rank is computed recuversively by traversing the task graph upward
+	 * @param msc
+	 * @param dag Mobile Application's DAG
+	 * @param infrastructure
+	 * @return the upward rank of msc
+	 * (which is also the lenght of the critical path (CP) of this task to the exit task)
+	 */
+
 	
 }

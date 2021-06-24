@@ -7,8 +7,8 @@
   <packaging>jar</packaging>
   
   <properties>
-    <maven.compiler.source>9</maven.compiler.source>
-    <maven.compiler.target>9</maven.compiler.target>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
   </properties>
   
   
@@ -19,12 +19,12 @@
 		<version>3.0.1</version>
 		<scope>provided</scope>
 		</dependency>
-	
-		<dependency>
-			<groupId>org.jgrapht</groupId>
-  			<artifactId>jgrapht-core</artifactId>
- 			<version>1.2.0</version>
-		</dependency>
+
+	  	<dependency>
+			  <groupId>org.jgrapht</groupId>
+			  <artifactId>jgrapht-core</artifactId>
+			  <version>1.5.1</version> // this was changed from 1.2.0
+	  	</dependency>
 	
 		<dependency>
     		<groupId>com.googlecode.json-simple</groupId>
@@ -114,7 +114,6 @@
 	<build>
         <finalName>sleipnir</finalName>
         <plugins>
-
            	<plugin>
     			<groupId>org.apache.maven.plugins</groupId>
     			<artifactId>maven-dependency-plugin</artifactId>
