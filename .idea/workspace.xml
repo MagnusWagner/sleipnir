@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="eb76a674-c553-4c96-b674-3462509ee4be" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/scheduling/offloading/algorithms/custom/DCPCustom.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/simulation.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/simulation.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/scheduling/offloading/algorithms/heftbased/HEFTResearch.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/scheduling/offloading/algorithms/heftbased/HEFTResearch.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
