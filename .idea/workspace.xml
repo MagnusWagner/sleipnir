@@ -3,6 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="eb76a674-c553-4c96-b674-3462509ee4be" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/model/infrastructure/computationalnodes/ComputationalNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/model/infrastructure/computationalnodes/ComputationalNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/scheduling/offloading/algorithms/custom/DCPCustom.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/scheduling/offloading/algorithms/custom/DCPCustom.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/scheduling/offloading/algorithms/heftbased/HEFTResearch.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/scheduling/offloading/algorithms/heftbased/HEFTResearch.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/sleipnir/OffloadingHelloWorld.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/at/ac/tuwien/ec/sleipnir/OffloadingHelloWorld.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,13 +90,15 @@
       <screen x="72" y="0" width="1296" height="912" />
     </state>
     <state x="201" y="31" key="SettingsEditor/72.0.1296.912/481.-1080.1858.1080@72.0.1296.912" timestamp="1623942222472" />
-    <state x="2587" y="364" key="com.intellij.ide.util.TipDialog" timestamp="1624516839663">
+    <state x="667" y="364" key="com.intellij.ide.util.TipDialog" timestamp="1625128754159">
+      <screen x="64" y="0" width="1856" height="1080" />
+    </state>
+    <state x="2587" y="364" key="com.intellij.ide.util.TipDialog/1984.0.1856.1080/64.0.1856.1080@1984.0.1856.1080" timestamp="1625037372181" />
+    <state x="667" y="364" key="com.intellij.ide.util.TipDialog/1984.0.1856.1080/64.0.1856.1080@64.0.1856.1080" timestamp="1625128754159" />
+    <state x="2444" y="242" width="964" height="805" key="search.everywhere.popup" timestamp="1625047876621">
       <screen x="1984" y="0" width="1856" height="1080" />
     </state>
-    <state x="2587" y="364" key="com.intellij.ide.util.TipDialog/1984.0.1856.1080/64.0.1856.1080@1984.0.1856.1080" timestamp="1624516839663" />
-    <state x="393" y="204" width="673" height="679" key="search.everywhere.popup" timestamp="1624461241122">
-      <screen x="72" y="0" width="1296" height="912" />
-    </state>
+    <state x="2444" y="242" width="964" height="805" key="search.everywhere.popup/1984.0.1856.1080/64.0.1856.1080@1984.0.1856.1080" timestamp="1625047876621" />
     <state x="928" y="-849" width="964" height="803" key="search.everywhere.popup/72.0.1296.912/481.-1080.1858.1080@481.-1080.1858.1080" timestamp="1624176964537" />
     <state x="384" y="195" width="672" height="678" key="search.everywhere.popup/72.0.1296.912/481.-1080.1858.1080@72.0.1296.912" timestamp="1623943852022" />
     <state x="393" y="204" width="673" height="679" key="search.everywhere.popup/72.0.1296.912@72.0.1296.912" timestamp="1624461241122" />

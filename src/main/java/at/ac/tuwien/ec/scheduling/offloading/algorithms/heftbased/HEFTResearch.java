@@ -132,15 +132,13 @@ public class HEFTResearch extends OffloadScheduler {
 			{
 				deploy(scheduling,currTask,target);
 				scheduledNodes.add(currTask);
-<<<<<<< Updated upstream
+
 				tasks.remove(currTask);
 			}
 			else if(!scheduledNodes.isEmpty());
 			{
 				MobileSoftwareComponent terminated = scheduledNodes.remove();
 				((ComputationalNode) scheduling.get(terminated)).undeploy(terminated);
-=======
->>>>>>> Stashed changes
 			}
 			/*
 			 * if simulation considers mobility, perform post-scheduling operations

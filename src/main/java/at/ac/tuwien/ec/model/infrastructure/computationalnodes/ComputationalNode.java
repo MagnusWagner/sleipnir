@@ -94,7 +94,7 @@ public abstract class ComputationalNode extends NetworkedNode implements Seriali
 	public double getESTforTask(MobileSoftwareComponent sc)
 	{
 		double est = 0.0;
-		if(this.isCompatible(sc))
+		if (this.isCompatible(sc))
 			return est;
 		else
 		{

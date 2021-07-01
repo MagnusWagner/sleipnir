@@ -203,6 +203,7 @@ public class OffloadingHelloWorld {
 							throws Exception {
 						ArrayList<Tuple2<OffloadScheduling,Tuple5<Integer,Double,Double,Double,Double>>> output = 
 								new ArrayList<Tuple2<OffloadScheduling,Tuple5<Integer,Double,Double,Double,Double>>>();
+
 						OffloadScheduler singleSearch;
 						
 						singleSearch = new HEFTResearch(inputValues);

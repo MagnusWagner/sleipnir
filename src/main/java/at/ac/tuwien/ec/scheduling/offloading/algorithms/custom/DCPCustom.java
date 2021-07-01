@@ -37,6 +37,7 @@ public class DCPCustom extends OffloadScheduler {
     private class SchedulingCluster {
     	private String name;
     	private NodeTypus nodeType;
+    	// Schedule with the variables {Start: (MSC, Length)}
     	private HashMap<Double,Tuple2<MobileSoftwareComponent,Double>> schedule;
 
     	public SchedulingCluster(String name, NodeTypus nodeType) {
@@ -51,6 +52,8 @@ public class DCPCustom extends OffloadScheduler {
 			return this.nodeType;
 		}
 
+
+		// Remove a Task if it is in the schedule
     	public void removeTask(MobileSoftwareComponent task) {
     		for (double key: this.schedule.keySet()) {
     			if (this.schedule.get(key).equals(task)) {
@@ -60,25 +63,49 @@ public class DCPCustom extends OffloadScheduler {
 		}
 
 		// Deploy tasks from the schedule to the infrastructure.
-		public void deployTasks(MobileCloudInfrastructure infrastructure, String userID) {
+		public void deployTasks(MobileCloudInfrastructure infrastructure, String userID, OffloadScheduling scheduling) {
+    		// Max_value for minimal runtime calculation over all nodes of selected node type.
     		double tMin = Double.MAX_VALUE;
-			MobileSoftwareComponent currTask;
+    		double tCurrent;
+    		ComputationalNode localNode = (ComputationalNode) infrastructure.getNodeById(userID);
+    		// adding all tasks from the dictionary to a list to make scheduling simpler.
+    		ArrayList<MobileSoftwareComponent> orderedTaskList = new ArrayList<MobileSoftwareComponent>();
+			for (Double key: this.schedule.keySet()) {
+				orderedTaskList.add(this.schedule.get(key)._1);
+			}
 			ComputationalNode target;
 			double node_runtime;
+			//
+			// Local
+			//
 			if (this.nodeType == NodeTypus.Local) {
-				// Local
-				target = (ComputationalNode) infrastructure.getNodeById(userID);
-				for (Double key: this.schedule.keySet()) {
-					currTask = this.schedule.get(key)._1;
+				target = localNode;
+				for (MobileSoftwareComponent currTask: orderedTaskList) {
+					if (isValid(scheduling,currTask,target)) {
+						deploy(scheduling,currTask,target);
+					}
+				}
+			}
+			//
+			// Edge
+			//
+			else if (this.nodeType == NodeTypus.Edge) {
+				for(ComputationalNode cn : infrastructure.getEdgeNodes().values()) {
+					tCurrent = 0.0;
+					for (MobileSoftwareComponent currTask: orderedTaskList) {
+						// questionable if isValid works like this.
+						if (!isValid(scheduling,currTask,target)) tCurrent += Double.MAX_VALUE;
+						else tCurrent += currTask.getRuntimeOnNode(localNode, cn, infrastructure);
+					}
+					if (tMin>tCurrent) {
+						tMin = tCurrent;
+						target = cn;
+					}
+				}
+				for (MobileSoftwareComponent currTask: orderedTaskList) {
 					deploy(scheduling,currTask,target);
 				}
 
-			}
-			else if (this.nodeType == NodeTypus.Edge) {
-				// Edge
-				for(ComputationalNode cn : infrastructure.getEdgeNodes().values()) {
-
-				}
 			} else {
 				// Cloud
 				for(ComputationalNode cn : infrastructure.getCloudNodes().values()) {
