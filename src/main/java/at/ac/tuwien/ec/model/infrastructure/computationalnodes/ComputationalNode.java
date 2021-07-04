@@ -17,9 +17,9 @@ import at.ac.tuwien.ec.model.software.SoftwareComponent;
 import at.ac.tuwien.ec.scheduling.utils.RuntimeComparator;
 
 public abstract class ComputationalNode extends NetworkedNode implements Serializable{
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3728294299293549641L;
 
@@ -37,14 +37,14 @@ public abstract class ComputationalNode extends NetworkedNode implements Seriali
 			return 0;
 		}
 	}
-	
-	
-	
+
+
+
 	protected CPUEnergyModel cpuEnergyModel;
 	protected PricingModel priceModel;
 	protected double bandwidth, latency, est = 0.0;
 	protected ArrayList<MobileSoftwareComponent> allocated;
-		
+
 	public ComputationalNode(String id, HardwareCapabilities capabilities)
 	{
 		super(id,capabilities);
@@ -52,15 +52,15 @@ public abstract class ComputationalNode extends NetworkedNode implements Seriali
 		this.setMaxDistance(-1);
 		this.allocated = new ArrayList<MobileSoftwareComponent>();
 	}
-		
+
 	private void setPricingModel(DefaultPriceModel pricingModel) {
-		this.priceModel = pricingModel;		
+		this.priceModel = pricingModel;
 	}
-		
+
 	public double getMipsPerCore(){
 		return this.capabilities.getMipsPerCore();
 	}
-	
+
 	public CPUEnergyModel getCPUEnergyModel() {
 		return cpuEnergyModel;
 	}
@@ -68,33 +68,33 @@ public abstract class ComputationalNode extends NetworkedNode implements Seriali
 	public void setCPUEnergyModel(CPUEnergyModel cpuEnergyModel) {
 		this.cpuEnergyModel = cpuEnergyModel;
 	}
-	
+
 	public double computeCost(SoftwareComponent sc, MobileCloudInfrastructure i)
 	{
 		return priceModel.computeCost(sc, this, i);
 	}
-		
+
 	public double computeCost(SoftwareComponent sc, ComputationalNode src, MobileCloudInfrastructure i)
 	{
 		return priceModel.computeCost(sc, src, i);
 	}
-	
+
 	public boolean deploy(SoftwareComponent sc)
 	{
 		allocated.add((MobileSoftwareComponent) sc);
 		return capabilities.deploy(sc);
 	}
-	
-	public void undeploy(SoftwareComponent sc) 
+
+	public void undeploy(SoftwareComponent sc)
 	{
 		capabilities.undeploy(sc);
 		allocated.remove(sc);
 	}
-	
+
 	public double getESTforTask(MobileSoftwareComponent sc)
 	{
 		double est = 0.0;
-		if (this.isCompatible(sc))
+		if(this.isCompatible(sc))
 			return est;
 		else
 		{
@@ -112,7 +112,7 @@ public abstract class ComputationalNode extends NetworkedNode implements Seriali
 			return est;
 		}
 	}
-	
+
 	public abstract void sampleNode();
 
 	public double getBandwidth() {
@@ -132,11 +132,19 @@ public abstract class ComputationalNode extends NetworkedNode implements Seriali
 	}
 
 	public void undeploy(ContainerInstance vmInstance) {
-		capabilities.undeploy(vmInstance);		
+		capabilities.undeploy(vmInstance);
 	}
 
 	public void deployVM(ContainerInstance vm) {
 		capabilities.deploy(vm);
 	}
-	
+
+	public ArrayList<MobileSoftwareComponent> getAllocatedTasks() {
+		return allocated;
+	}
+
+	public void setAllocatedTasks(ArrayList<MobileSoftwareComponent> allocated) {
+		this.allocated = allocated;
+	}
+
 }

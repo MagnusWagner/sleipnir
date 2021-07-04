@@ -37,7 +37,7 @@ public class DCPCustom extends OffloadScheduler {
     private class SchedulingCluster {
     	private String name;
     	private NodeTypus nodeType;
-    	// Schedule with the variables {Start: (MSC, Length)}
+    	// Schedule with the variables {StartTime: (MSC, Length)}
     	private HashMap<Double,Tuple2<MobileSoftwareComponent,Double>> schedule;
 
     	public SchedulingCluster(String name, NodeTypus nodeType) {
@@ -52,11 +52,10 @@ public class DCPCustom extends OffloadScheduler {
 			return this.nodeType;
 		}
 
-
 		// Remove a Task if it is in the schedule
     	public void removeTask(MobileSoftwareComponent task) {
     		for (double key: this.schedule.keySet()) {
-    			if (this.schedule.get(key).equals(task)) {
+    			if (this.schedule.get(key)._1.equals(task)) {
 					this.schedule.remove(key);
 				}
 			}
@@ -73,18 +72,13 @@ public class DCPCustom extends OffloadScheduler {
 			for (Double key: this.schedule.keySet()) {
 				orderedTaskList.add(this.schedule.get(key)._1);
 			}
-			ComputationalNode target;
+			ComputationalNode target = localNode;
 			double node_runtime;
 			//
 			// Local
 			//
 			if (this.nodeType == NodeTypus.Local) {
 				target = localNode;
-				for (MobileSoftwareComponent currTask: orderedTaskList) {
-					if (isValid(scheduling,currTask,target)) {
-						deploy(scheduling,currTask,target);
-					}
-				}
 			}
 			//
 			// Edge
@@ -92,40 +86,48 @@ public class DCPCustom extends OffloadScheduler {
 			else if (this.nodeType == NodeTypus.Edge) {
 				for(ComputationalNode cn : infrastructure.getEdgeNodes().values()) {
 					tCurrent = 0.0;
+					MobileSoftwareComponent firstTask = orderedTaskList.get(0);
+					// We get the earliest starting time for the first task as a base.
+					tCurrent += cn.getESTforTask(firstTask);
 					for (MobileSoftwareComponent currTask: orderedTaskList) {
-						// questionable if isValid works like this.
-						if (!isValid(scheduling,currTask,target)) tCurrent += Double.MAX_VALUE;
+						// isValid only checks if task and node can be run together, not regarding other scheduled tasks
+						if (!isValid(scheduling,currTask,cn)) tCurrent += Double.MAX_VALUE;
+						// for each task, we add its runtime to the base time.
 						else tCurrent += currTask.getRuntimeOnNode(localNode, cn, infrastructure);
 					}
+					// if the total time is lower than our current minimum, we have a new node as target.
 					if (tMin>tCurrent) {
 						tMin = tCurrent;
 						target = cn;
 					}
 				}
-				for (MobileSoftwareComponent currTask: orderedTaskList) {
-					deploy(scheduling,currTask,target);
-				}
-
+			//
+			// Cloud
+			//
 			} else {
-				// Cloud
-				for(ComputationalNode cn : infrastructure.getCloudNodes().values()) {
 
+				for(ComputationalNode cn : infrastructure.getCloudNodes().values()) {
+					tCurrent = 0.0;
+					MobileSoftwareComponent firstTask = orderedTaskList.get(0);
+					// We get the earliest starting time for the first task as a base.
+					tCurrent += cn.getESTforTask(firstTask);
+					for (MobileSoftwareComponent currTask: orderedTaskList) {
+						// isValid only checks if task and node can be run together, not regarding other scheduled tasks
+						if (!isValid(scheduling,currTask,target)) tCurrent += Double.MAX_VALUE;
+							// for each task, we add its runtime to the base time.
+						else tCurrent += currTask.getRuntimeOnNode(localNode, cn, infrastructure);
+					}
+					// if the total time is lower than our current minimum, we have a new node as target.
+					if (tMin>tCurrent) {
+						tMin = tCurrent;
+						target = cn;
+					}
 				}
 			}
-
-			for(ComputationalNode cn : infrastructure.getAllNodes())
-
-				node_runtime =
-
-
-				}
-				if(currTask.getRuntimeOnNode(cn, currentInfrastructure) < tMin &&
-						isValid(scheduling,currTask,cn))
-				{
-					tMin = currTask.getRuntimeOnNode(cn, currentInfrastructure); // Earliest Finish Time  EFT = wij + EST
-					target = cn;
-
-				}
+			// we deploy all tasks that should be valid and offloadable onto the target.
+			for (MobileSoftwareComponent currTask: orderedTaskList) {
+				deploy(scheduling,currTask,target);
+			}
 		}
 
 		public void addTask(MobileSoftwareComponent task, double time, double length) {
@@ -134,20 +136,24 @@ public class DCPCustom extends OffloadScheduler {
 		}
 
 		public List<MobileSoftwareComponent> getScheduledTasks() {
-    		return this.schedule.keySet();
+			ArrayList<MobileSoftwareComponent> orderedTaskList = new ArrayList<MobileSoftwareComponent>();
+			for (Double key: this.schedule.keySet()) {
+				orderedTaskList.add(this.schedule.get(key)._1);
+			}
+			return orderedTaskList;
 		}
 
-    	public double find_slot(MobileSoftwareComponent task, boolean PUSH) {
-    			// TODO
-
+    	public double find_slot(MobileSoftwareComponent task, boolean PUSH, DirectedAcyclicGraph dag) {
+    		double ni_AEST = AEST(task,)
 		}
 	}
 
 
 
 
-	private Map<MobileSoftwareComponent,Tuple2<String,Double>> task_scheduling;
-	private Map<String,List<Tuple2<Double,MobileSoftwareComponent>>> cluster_scheduling;
+	private Map<MobileSoftwareComponent,Tuple2<SchedulingCluster,Double>> task_scheduling;
+	// private Map<SchedulingCluster,List<Tuple2<Double,MobileSoftwareComponent>>> cluster_scheduling;
+	private ArrayList<SchedulingCluster> all_schedules = new ArrayList<>();
     private Map<MobileSoftwareComponent,Double> AEST_levels;
 	private Map<MobileSoftwareComponent,Double> ALST_levels;
 	private Map<MobileSoftwareComponent,Double> Mobility_levels;
@@ -248,10 +254,10 @@ public class DCPCustom extends OffloadScheduler {
 				 * local execution is the best option
 				 */
 				ComputationalNode localDevice = (ComputationalNode) currentInfrastructure.getNodeById(currTask.getUserId());
-				if(currTask.getRuntimeOnNode(localDevice, currentInfrastructure) < tMin &&
+				if(currTask.getLocalRuntimeOnNode(localDevice, currentInfrastructure) < tMin &&
 						isValid(scheduling,currTask,localDevice))
 				{
-					tMin = currTask.getRuntimeOnNode(localDevice, currentInfrastructure); // Earliest Finish Time  EFT = wij + EST
+					tMin = currTask.getLocalRuntimeOnNode(localDevice, currentInfrastructure); // Earliest Finish Time  EFT = wij + EST
 					target = localDevice;
 				}
 			}
@@ -274,68 +280,104 @@ public class DCPCustom extends OffloadScheduler {
 		return deployments;
 	}
 
-	// to be changed TODO
-	protected void setRank(MobileApplication A, MobileCloudInfrastructure I)
-	{
-		for(MobileSoftwareComponent msc : A.getTaskDependencies().vertexSet())
-			msc.setVisited(false);
-
-		for(MobileSoftwareComponent msc : A.getTaskDependencies().vertexSet())
-			upRank(msc,A.getTaskDependencies(),I);
-
-	}
 
 
 
 
-    private HashMap<MobileSoftwareComponent,Double> AEST_calculation(MobileApplication A, MobileCloudInfrastructure I) {
+    private void AEST_calculation(MobileApplication A, MobileCloudInfrastructure I) {
 		AEST_levels = new HashMap<MobileSoftwareComponent,Double>();
 		List<MobileSoftwareComponent> taskList = new ArrayList<MobileSoftwareComponent>();
 		DirectedAcyclicGraph<MobileSoftwareComponent, ComponentLink> dag = A.getTaskDependencies();
 		for (MobileSoftwareComponent mobileSoftwareComponent : dag) taskList.add(mobileSoftwareComponent);
 		// Collections.reverse(taskList);
 		for (MobileSoftwareComponent task : taskList) {
-			AEST_levels.put(task,AEST(task, dag, I));
+			AEST_levels.put(task,AEST_without_Node(task, dag, I));
 		};
 	};
 
 
-	private double AEST(MobileSoftwareComponent task, DirectedAcyclicGraph<MobileSoftwareComponent, ComponentLink> dag, MobileCloudInfrastructure I) {
-		if (AEST_levels.containsKey(task)) return AEST_levels.get(task);
+	private double AEST_without_Node(MobileSoftwareComponent n_i, DirectedAcyclicGraph<MobileSoftwareComponent, ComponentLink> dag, MobileCloudInfrastructure I) {
+		// if calculation was already done: (1.)
+		if (AEST_levels.containsKey(n_i)) return AEST_levels.get(n_i);
 		else {
-			if (dag.outgoingEdgesOf(task).isEmpty()) return 0.0; // if it is an entry node
+			Boolean sameNode;
+			ComputationalNode localNode = (ComputationalNode) I.getNodeById(n_i.getUserId());
+			// if it is an entry node (2.)
+			if (dag.incomingEdgesOf(n_i).isEmpty()) return 0.0;
 			double max = 0.0;
+			// start time and length for n_i
+			double start_ni = 0;
+			if (n_i.isVisited()) {
+				HashMap<Double,Tuple2<MobileSoftwareComponent,Double>> currentNodeSchedule = task_scheduling.get(n_i)._1.schedule;
+				for (Double key: currentNodeSchedule.keySet()) {
+					if (currentNodeSchedule.get(key)._1.equals(n_i)) {
+						start_ni = key;
+					}
+				}
+			}
 			// for each parent
-			Set<MobileSoftwareComponent> parents = dag.getAncestors(task);
+			Set<MobileSoftwareComponent> parents = dag.getAncestors(n_i);
+			double w_nx = 0.0; // average execution time of n_i on each processor / node of this component
+			double c_ni_nx;
 			for (MobileSoftwareComponent n_x : parents) {
-				// this should be the check on if the task is already scheduled on some node.
+				// sameNode should be set on false first.
+				sameNode = false;
+				// this should be the check on if the n_i is already scheduled on some node.
 				if (n_x.isVisited()) {
-
+					HashMap<Double,Tuple2<MobileSoftwareComponent,Double>> parentNodeSchedule = task_scheduling.get(n_x)._1.schedule;
+					// change sameNode if n_x and n_i are scheduled on the same Node;
+					if (n_i.isVisited()) sameNode = task_scheduling.get(n_x)._1.equals(task_scheduling.get(n_i)._1);
+					// start time for parent
+					double start_nx = 0;
+					// get average runtime on scheduled node_type (4.a)
+					for (Double key: parentNodeSchedule.keySet()) {
+						if (parentNodeSchedule.get(key)._1.equals(n_x)) {
+							w_nx = parentNodeSchedule.get(key)._2;
+							// get start_time of nx
+							start_nx = key;
+						}
+					}
+					// getting the communication cost.
+					// if both n_x and n_i are scheduled on the same node: (4.c)
+					if (sameNode) c_ni_nx = start_ni - (start_nx + w_nx);
+					// (4.d) C_Cost if they are not scheduled on the same node, we look for the average communication cost of n_i to all Nodes.
+					else {
+						c_ni_nx = 0.0;
+						for(ComputationalNode cn : I.getAllNodes())
+							c_ni_nx += I.getTransmissionTime(n_i, I.getNodeById(n_i.getUserId()), cn);
+						c_ni_nx = c_ni_nx / (I.getAllNodes().size());
+					}
 				}
-			}
-			// TODO
-			double w_cmp = 0.0; // average execution time of task on each processor / node of this component
-			int numberOfNodes = I.getAllNodes().size() + 1;
-			for(ComputationalNode cn : I.getAllNodes())
-				w_cmp += task.getLocalRuntimeOnNode(cn, I);
-			w_cmp = w_cmp / numberOfNodes;
-
-			// rank is equivalent to b level
-			double max = 0;
-			for(ComponentLink neigh : dag.outgoingEdgesOf(task)){
-
-				MobileSoftwareComponent ny = neigh.getTarget();
-				double neigh_b_level = b_level(ny,dag,I);
-
-				if (ny.getRank() > max) {
-					max = ny.getRank();
+				// get LocalRuntime of task is not offloadable (4.a)
+				else if (!n_x.isOffloadable()) {
+					w_nx = n_x.getLocalRuntimeOnNode(localNode,I);
+					// (4.d) C_Cost if they are not scheduled on the same node, we look for the average communication cost of n_i to all Nodes.
+					c_ni_nx = 0.0;
+					for(ComputationalNode cn : I.getAllNodes())
+						c_ni_nx += I.getTransmissionTime(n_i, I.getNodeById(n_i.getUserId()), cn);
+					c_ni_nx = c_ni_nx / (I.getAllNodes().size());
+				// If task is not scheduled and offloadable, get average runtime over all infrastructure-nodes (4.b)
+				} else {
+					int numberOfNodes = I.getAllNodes().size() + 1;
+					w_nx = 0.0;
+					for(ComputationalNode cn : I.getAllNodes())
+						w_nx += n_x.getLocalRuntimeOnNode(cn, I);
+					w_nx = w_nx / numberOfNodes;
+					// (4.d) C_Cost if they are not scheduled on the same node, we look for the average communication cost of n_i to all Nodes.
+					c_ni_nx = 0.0;
+					for (ComputationalNode cn : I.getAllNodes())
+						c_ni_nx += I.getTransmissionTime(n_i, I.getNodeById(n_i.getUserId()), cn);
+					c_ni_nx = c_ni_nx / (I.getAllNodes().size());
 				}
+				// checking if this is larger than the current max! (4.e)
+				if (AEST_without_Node(n_x, dag, I)+w_nx+c_ni_nx>max) max = AEST_without_Node(n_x, dag, I)+w_nx+c_ni_nx;
 			}
-			task.setRank(w_cmp + max);
+			// returning the AEST value of n_i (5.)
+			return max;
 		}
 	};
 
-	private double AEST(MobileSoftwareComponent task, DirectedAcyclicGraph<MobileSoftwareComponent, ComponentLink> dag, MobileCloudInfrastructure I) {
+	private double ALST(MobileSoftwareComponent task, DirectedAcyclicGraph<MobileSoftwareComponent, ComponentLink> dag, MobileCloudInfrastructure I) {
 		if (b_levels.containsKey(task)) return b_levels.get(task);
 		else {
 			double w_cmp = 0.0; // average execution time of task on each processor / node of this component
